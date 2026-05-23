@@ -1,0 +1,41 @@
+.cite-popover {
+  position: fixed;
+  z-index: 999;
+  display: none;
+  max-width: 36rem;
+  padding: 0.75rem 1rem;
+  background: var(--light);
+  color: var(--dark);
+  border: 1px solid var(--lightgray);
+  border-radius: 5px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+  font-size: 0.9rem;
+  line-height: 1.45;
+
+  &.active {
+    display: block;
+  }
+
+  p {
+    margin: 0.35rem 0;
+  }
+  p:first-child {
+    margin-top: 0;
+  }
+  p:last-child {
+    margin-bottom: 0;
+  }
+  a {
+    color: var(--secondary);
+    word-break: break-word;
+  }
+}
+
+mark {
+  background: var(--highlight);
+  color: var(--dark);
+  padding: 0 0.2em;
+  border-radius: 3px;
+  font-size: 0.85em;
+  font-style: italic;
+}
