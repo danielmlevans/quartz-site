@@ -12,7 +12,7 @@ worked_example: literature-reviews/skill-ranking-algorithms.md
 ## Definition
 
 > [!definition] Plain-language
-> **Rapid Research** is a local arXiv search warehouse — every arXiv paper since 2007 (~3 million) sitting in a single DuckDB file on my laptop, with a hybrid retrieval stack layered on top (lexical full-text search, dense embeddings, cross-encoder rerank, LLM-driven query rewriting). The point of it is to take a sports question — "what's the state of the art in injury-risk prediction from wearables?" — and return a ranked, cited set of frontier papers in seconds, with retrieval quality comparable to a hosted production system, but running entirely on a single device with no rate limits and no data leaving the machine.
+> **Discipline** is a local arXiv search warehouse — every arXiv paper since 2007 (~3 million) sitting in a single DuckDB file on my laptop, with a hybrid retrieval stack layered on top (lexical full-text search, dense embeddings, cross-encoder rerank, LLM-driven query rewriting). The point of it is to take a sports question — "what's the state of the art in injury-risk prediction from wearables?" — and return a ranked, cited set of frontier papers in seconds, with retrieval quality comparable to a hosted production system, but running entirely on a single device with no rate limits and no data leaving the machine.
 
 It is the upstream of every note on this site. When I want to know what AI has to say about a sport problem, this is what I ask first.
 
@@ -56,7 +56,7 @@ It is also not novel research infrastructure. The architecture is standard hybri
 
 ## A worked example — skill rating for sport
 
-To make this concrete: on 2026-05-28 I ran the Discipline loop end-to-end on a sports-adjacent question — *what are the algorithms for rating skill (Elo, Glicko, TrueSkill, …) and which is state of the art?* Eight BM25 sweeps over the 3.05 M-paper silver layer returned ~80 unique skill-rating papers across theory, sports applications, esports matchmaking and LLM arena evaluation. The full synthesis is in [skill-ranking-algorithms](https://github.com/) in the Discipline repo under `literature-reviews/`; the headline findings:
+To make this concrete: on 2026-05-28 I ran the Discipline loop end-to-end on a sports-adjacent question — *what are the algorithms for rating skill (Elo, Glicko, TrueSkill, …) and which is state of the art?* Eight BM25 sweeps over the 3.05 M-paper silver layer returned ~80 unique skill-rating papers across theory, sports applications, esports matchmaking and LLM arena evaluation. The full synthesis is in [Skill Rating Algorithms](/notes/skill-rating-algorithms); the headline findings:
 
 - **Foundational layer is Bradley–Terry / Plackett–Luce.** Elo, Glicko-2 and TrueSkill are all special cases of a Gaussian state-space filter over a BT/PL likelihood ([2104.14012](https://arxiv.org/abs/2104.14012), [2312.13619](https://arxiv.org/abs/2312.13619)).
 - **For sport specifically,** the modern SOTA is *score-driven* / *margin-of-victory* rating — [2604.09143](https://arxiv.org/abs/2604.09143) and [2506.00348](https://arxiv.org/abs/2506.00348) — which beat vanilla Elo + Glicko + TrueSkill on calibrated log-loss across soccer, NBA, tennis and Test cricket backtests. Both recover Elo as a degenerate special case, so adopting them is strictly an upgrade.
