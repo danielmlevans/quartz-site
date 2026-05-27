@@ -24,13 +24,28 @@ function toggleToc(this: HTMLElement) {
   content.classList.toggle("collapsed")
 }
 
+function toggleTocEntry(this: HTMLElement, e: Event) {
+  e.preventDefault()
+  const li = this.closest("li")
+  if (!li) return
+  const collapsed = li.classList.toggle("collapsed")
+  this.setAttribute("aria-expanded", collapsed ? "false" : "true")
+}
+
 function setupToc() {
   for (const toc of document.getElementsByClassName("toc")) {
     const button = toc.querySelector(".toc-header")
     const content = toc.querySelector(".toc-content")
-    if (!button || !content) return
+    if (!button || !content) continue
     button.addEventListener("click", toggleToc)
     window.addCleanup(() => button.removeEventListener("click", toggleToc))
+
+    for (const toggle of content.querySelectorAll(".toc-entry-toggle")) {
+      toggle.addEventListener("click", toggleTocEntry as EventListener)
+      window.addCleanup(() =>
+        toggle.removeEventListener("click", toggleTocEntry as EventListener),
+      )
+    }
   }
 }
 

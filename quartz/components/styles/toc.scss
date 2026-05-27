@@ -45,22 +45,55 @@ ul.toc-content.overflow {
   padding: 0;
   max-height: calc(100% - 2rem);
   overscroll-behavior: contain;
-  list-style: none;
 
-  & > li > a {
-    color: var(--dark);
-    opacity: 0.35;
-    transition:
-      0.5s ease opacity,
-      0.3s ease color;
-    &.in-view {
-      opacity: 0.75;
+  ul.toc-children {
+    list-style: none;
+    padding-left: 1rem;
+    margin: 0;
+  }
+
+  li.collapsed > ul.toc-children {
+    display: none;
+  }
+
+  .toc-entry {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+
+    & > a {
+      color: var(--dark);
+      opacity: 0.35;
+      transition:
+        0.5s ease opacity,
+        0.3s ease color;
+      &.in-view {
+        opacity: 0.75;
+      }
     }
   }
 
-  @for $i from 0 through 6 {
-    & .depth-#{$i} {
-      padding-left: calc(1rem * #{$i});
+  .toc-entry-toggle {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    color: var(--dark);
+    opacity: 0.5;
+
+    & .fold {
+      transition: transform 0.2s ease;
     }
+  }
+
+  li.collapsed > .toc-entry > .toc-entry-toggle .fold {
+    transform: rotateZ(-90deg);
+  }
+
+  .toc-entry-spacer {
+    display: inline-block;
+    width: 16px;
   }
 }

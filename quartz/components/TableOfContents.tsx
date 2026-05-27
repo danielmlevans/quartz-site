@@ -17,6 +17,81 @@ const defaultOptions: Options = {
   layout: "modern",
 }
 
+interface TocEntry {
+  depth: number
+  text: string
+  slug: string
+}
+
+interface TocNode {
+  entry: TocEntry
+  children: TocNode[]
+}
+
+function buildTocTree(toc: TocEntry[]): TocNode[] {
+  const roots: TocNode[] = []
+  const stack: TocNode[] = []
+  for (const entry of toc) {
+    const node: TocNode = { entry, children: [] }
+    while (stack.length && stack[stack.length - 1].entry.depth >= entry.depth) {
+      stack.pop()
+    }
+    if (stack.length === 0) {
+      roots.push(node)
+    } else {
+      stack[stack.length - 1].children.push(node)
+    }
+    stack.push(node)
+  }
+  return roots
+}
+
+const Chevron = () => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    class="fold"
+  >
+    <polyline points="6 9 12 15 18 9"></polyline>
+  </svg>
+)
+
+const renderNode = (node: TocNode, isRoot: boolean) => {
+  const hasChildren = node.children.length > 0
+  const startCollapsed = hasChildren && !isRoot
+  const liClass = `depth-${node.entry.depth}${startCollapsed ? " collapsed" : ""}`
+  return (
+    <li key={node.entry.slug} class={liClass}>
+      <div class="toc-entry">
+        {hasChildren ? (
+          <button
+            type="button"
+            class="toc-entry-toggle"
+            aria-expanded={startCollapsed ? "false" : "true"}
+          >
+            <Chevron />
+          </button>
+        ) : (
+          <span class="toc-entry-spacer" />
+        )}
+        <a href={`#${node.entry.slug}`} data-for={node.entry.slug}>
+          {node.entry.text}
+        </a>
+      </div>
+      {hasChildren && (
+        <ul class="toc-children">{node.children.map((c) => renderNode(c, false))}</ul>
+      )}
+    </li>
+  )
+}
+
 let numTocs = 0
 export default ((opts?: Partial<Options>) => {
   const layout = opts?.layout ?? defaultOptions.layout
@@ -59,13 +134,7 @@ export default ((opts?: Partial<Options>) => {
           id={id}
           class={fileData.collapseToc ? "collapsed toc-content" : "toc-content"}
         >
-          {fileData.toc.map((tocEntry) => (
-            <li key={tocEntry.slug} class={`depth-${tocEntry.depth}`}>
-              <a href={`#${tocEntry.slug}`} data-for={tocEntry.slug}>
-                {tocEntry.text}
-              </a>
-            </li>
-          ))}
+          {buildTocTree(fileData.toc).map((node) => renderNode(node, true))}
         </OverflowList>
       </div>
     )
