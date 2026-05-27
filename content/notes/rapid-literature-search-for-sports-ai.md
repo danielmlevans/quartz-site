@@ -12,7 +12,7 @@ worked_example: literature-reviews/skill-ranking-algorithms.md
 ## Definition
 
 > [!definition] Plain-language
-> **Discipline** is a local arXiv search warehouse — every arXiv paper since 2007 (~3 million) sitting in a single DuckDB file on my laptop, with a hybrid retrieval stack layered on top (lexical full-text search, dense embeddings, cross-encoder rerank, LLM-driven query rewriting). The point of it is to take a sports question — "what's the state of the art in injury-risk prediction from wearables?" — and return a ranked, cited set of frontier papers in seconds, with retrieval quality comparable to a hosted production system, but running entirely on a single device with no rate limits and no data leaving the machine.
+> **Rapid Sports** is a local arXiv search warehouse — every arXiv paper since 2007 (~3 million) sitting in a single DuckDB file on my laptop, with a hybrid retrieval stack layered on top (lexical full-text search, dense embeddings, cross-encoder rerank, LLM-driven query rewriting). The point of it is to take a sports question — "what's the state of the art in injury-risk prediction from wearables?" — and return a ranked, cited set of frontier papers in seconds, with retrieval quality comparable to a hosted production system, but running entirely on a single device with no rate limits and no data leaving the machine.
 
 It is the upstream of every note on this site. When I want to know what AI has to say about a sport problem, this is what I ask first.
 
@@ -22,11 +22,11 @@ Elite sport is small, distributed, and structurally under-resourced for keeping 
 
 The bottleneck is not idea generation. Coaches and practitioners have abundant questions. The bottleneck is **the speed and accuracy of literature triage**. If finding the right five frontier papers on a specific sport question takes a day, the question doesn't get asked. If it takes ninety seconds, the question gets asked routinely — and the answer feeds the next question.
 
-That asymmetry is what Discipline exists to compress.
+That asymmetry is what Rapid Sports exists to compress.
 
 ## The pipeline
 
-Discipline is organised as a five-phase bronze → silver → gold architecture, with each phase independently shippable and gated by retrieval-quality metrics (nDCG@10, Recall@100) computed against TREC-format qrels via `pytrec_eval`.
+Rapid Sports is organised as a five-phase bronze → silver → gold architecture, with each phase independently shippable and gated by retrieval-quality metrics (nDCG@10, Recall@100) computed against TREC-format qrels via `pytrec_eval`.
 
 1. **Bronze — raw metadata.** Full arXiv metadata harvested via OAI-PMH, stored as immutable rows keyed on `id`. ~3M papers, daily incremental refresh. This is the source of truth; everything downstream rebuilds from it.
 2. **Silver — normalisation + lexical FTS.** A BM25 full-text index over normalised titles and abstracts. Cheap, fast, and surprisingly hard to beat for keyword-rich queries ("Polar Verity Sense heart-rate variability").
@@ -41,12 +41,12 @@ End-to-end latency budget: **p95 ≤ 3.5 s cold, ≤ 500 ms cached**, on a singl
 A practical loop looks like this:
 
 1. **Frame the question in sport vocabulary** — "can we predict hamstring strain from GPS load and sleep variance?"
-2. **Query Discipline.** The query-understanding layer rewrites the question into ML-paper vocabulary (time-series anomaly detection, multimodal injury prediction, survival modelling).
+2. **Query Rapid Sports.** The query-understanding layer rewrites the question into ML-paper vocabulary (time-series anomaly detection, multimodal injury prediction, survival modelling).
 3. **Triage the top 10–20 hits.** Filter for recency, citation density, and methodological fit.
 4. **Read deeply.** The ranked list is short enough that close reading is possible in an evening.
 5. **Synthesise into a note** on this site, with the sports lens applied — what does this method assume, what data does it need, where does it break in our setting?
 
-Step 5 is what closes the loop. Discipline is the search engine; this blog is the synthesis layer.
+Step 5 is what closes the loop. Rapid Sports is the search engine; this blog is the synthesis layer.
 
 ## What this is not
 
