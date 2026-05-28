@@ -86,6 +86,44 @@ The most important and least obvious choice. Almost no off-the-shelf system hand
 - [2409.05714](https://arxiv.org/abs/2409.05714) — Dynamic ranking for the Men's Ice Hockey World (Junior) Championships. Single-benchmark-event forecasting; the Olympic shape.
 - [2510.14723](https://arxiv.org/abs/2510.14723) — Bayesian Olympic medal table; cross-discipline aggregation for national strength.
 
+## Evaluation
+
+The right evaluation set is the *thing the system will be used to predict*. For Olympic-discipline rating that is one benchmark event per year, with one peak Games per cycle — not a stream of arbitrary pairwise matches. The evaluation design follows from this.
+
+### Primary: the last Olympic cycle as a held-out window
+
+Hold out the most recent complete Olympic cycle (≈4 years, 4 Worlds + 1 Games per discipline) as the final test set. Train on everything strictly before the cycle starts; do not retrain inside the cycle. This is closer to deployment than rolling-origin retrain — federations fit once per quad and live with it — and it forces honesty about new-athlete cold-start in a way that rolling retrain papers over.
+
+### Three caveats on the cycle holdout
+
+1. **One Olympics ≠ one evaluation.** A single Games is n = 1 on the headline metric; bootstrap CIs over it are meaningless. Report metrics across all ~5 benchmark events in the cycle (4 Worlds + 1 Games), with the Games as a highlighted line and the Worlds as the variance-reduction backbone. Bootstrap over events.
+
+2. **Hyperparameters need their own holdout.** Prior strength, season-decay half-life, Student-t degrees of freedom, SBM block prior — these silently overfit if tuned on the test cycle. Use the *prior* Olympic cycle as the development set: train ≤ T−8y, dev T−8y…T−4y (lock hyperparameters), refit ≤ T−4y, test T−4y…T.
+
+3. **Sport mix is non-stationary across cycles.** Breaking, sport climbing, and skateboarding entered in 2020–24; karate left. Cold-start athletes in newly-added sports will dominate the loss without telling you anything about rating quality. Stratify reported metrics by "stable" vs "new" disciplines, or restrict the comparison set.
+
+### Metrics — all four; any one alone is gameable
+
+| Metric | What it catches |
+| --- | --- |
+| Spearman ρ on full finishing order | Global rank quality |
+| NDCG@10, podium top-3 hit rate | What federations and broadcasters actually care about |
+| Log-loss on induced pairwise win probabilities | Properly scored probabilistic forecast |
+| 90% credible-interval coverage on individual placings | Honesty — punishes models that hide uncertainty; the test where partial-identification ([2410.18272](https://arxiv.org/abs/2410.18272)) earns its keep |
+
+### Diagnostics within the held-out cycle
+
+Not replacements for the cycle-level metrics — additional probes that localize where a model is winning or losing.
+
+- **Bridge-match holdout.** Within the cycle, score log-loss on cross-region / cross-block matches separately from within-block matches. A model that scores well within-block but badly on bridges is hiding a non-identified ranking — directly tests the SBM ([2511.03467](https://arxiv.org/abs/2511.03467)) and partial-ID claims.
+- **Bad-day stress test.** Identify "meltdown finishes" — a defending top-5 athlete finishing outside top 20 at a Worlds/Games, conditional on normal season form. Check that the model's *next-event* prediction does not crater. Direct empirical test for the Student-t observation noise ([2502.18206](https://arxiv.org/abs/2502.18206)) and season-trajectory decomposition ([2405.17214](https://arxiv.org/abs/2405.17214)). Vanilla Elo and Glicko fail this loudly.
+
+### What not to use
+
+- Random pairwise holdout across all events — leaks future state through the time-varying latent skill.
+- A single "test season" — one season's noise dominates; ~5 benchmark events is the floor for talking about systematic differences.
+- Accuracy on binary "winner predicted" — throws away the rank, and benchmark events are routinely decided by tenths of a percent.
+
 ## What this is not
 
 Not a recommendation to deploy raw Elo, Glicko-2, or TrueSkill on Olympic data. They will produce confident-looking numbers that are quietly wrong: biased toward whichever region the athlete competes in most, brittle to single-event volatility, and silently averaging over disconnected comparison-graph components as if they were the same scale.
